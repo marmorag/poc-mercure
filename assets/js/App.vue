@@ -12,7 +12,7 @@
             </thead>
 
             <tbody>
-                <tr v-for="track in tracks" :key="track.id">
+                <tr v-for="(track, id) in tracks" :key="id">
                     <td>{{ track.name }}</td>
                     <td>{{ track.author }}</td>
                     <td>{{ track.burn }}</td>
@@ -33,7 +33,7 @@
         name: 'App',
         data() {
           return {
-              tracks: [],
+              tracks: {},
           };
         },
         created() {
@@ -42,18 +42,24 @@
         methods: {
             async fetchTracks() {
                 const response = await axios.get('http://localhost:8000/api/tracks');
-                this.tracks = response.data['hydra:member'];
+                response.data['hydra:member'].forEach(track => {
+                    // use $set to keep property reactive
+                    this.$set(this.tracks, track['@id'], track);
+                });
                 this.subscribeToHub(response);
             },
             subscribeToHub(response) {
                 const hubUrl = response.headers.link.match(/.*<(http:\/\/.*)>.*rel="mercure".*/)[1];
+                const url = new URL(hubUrl);
+                url.searchParams.append('topic', `http://${window.location.host}/api/tracks/{id}`);
 
-                // const url = new URL(hubUrl);
-                // url.searchParams.append('topic', hubUrl+'/tracks/{id}');
+                this.eventSource = new EventSource(url);
 
-                this.eventSource = new EventSource(hubUrl);
-                // The callback will be called every time an update is published
-                this.eventSource.onmessage = e => console.log(e); // do somet
+                this.eventSource.onmessage = e => {
+                    const updatedTrack = JSON.parse(e.data);
+                    // use $set to keep property reactive
+                    this.$set(this.tracks, updatedTrack['@id'], updatedTrack);
+                };
             },
             onTurnUp(track) {
                 track.burn++;

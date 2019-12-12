@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource(
- *     mercure="true"
+ *     mercure=true
  * )
  * @ORM\Entity(repositoryClass="App\Repository\TrackRepository")
  */
