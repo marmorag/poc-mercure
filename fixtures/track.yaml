@@ -1,0 +1,13 @@
+App\Entity\Track:
+  track_1:
+    name: A track
+    author: Embody
+    burn: 0
+  track_2:
+    name: Another track
+    author: Embody
+    burn: 5
+  track_3:
+    name: A cool track
+    author: Bakermat
+    burn: 1
